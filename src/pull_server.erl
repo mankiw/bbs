@@ -197,7 +197,7 @@ tidy() ->
     List = ets:tab2list(ets_info),
     SortFun = 
         fun(#message{reply_time = T1}, #message{reply_time = T2}) ->
-                T1 < T2
+                T1 > T2
         end,
     SortList = lists:sort(SortFun, List),
     SubList = lists:sublist(SortList, 1000),
@@ -235,7 +235,7 @@ check(L2, Time) ->
             
 g_2_unix_second(G) ->
     G_Second = calendar:datetime_to_gregorian_seconds(calendar:local_time()),
-    G_Second + unixtime() - G.
+    G - G_Second + unixtime().
             
 unixtime() ->
     {M, S, _} = erlang:now(),
