@@ -223,7 +223,7 @@ check(L2, Time) ->
             GTime = calendar:datetime_to_gregorian_seconds({date(),{H1,M1,S1}}),
             Utime = g_2_unix_second(GTime),
             io:format("GTime is ~w~n", [Utime]),
-            case Utime - Time < 60 of
+            case Time - Utime < 60 of
                 true ->
                     Utime;
                 _ ->
