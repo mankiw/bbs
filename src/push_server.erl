@@ -13,7 +13,7 @@
 -include("common.hrl").
 %% --------------------------------------------------------------------
 %% External exports
--export([start_link/0, update_date/1, get_data/2]).
+-export([start_link/0, update_date/1, get_data/2, show_data/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -24,13 +24,29 @@
 %% External functions
 %% ====================================================================
 
+get_data(F, T) ->
+    SubList = gen_server:call(push_server, {get_data, F, T}),
+    FormatFun =
+        fun(Msg) ->
+                #msg{
+                     url = Msg#message.url,
+                     title = Msg#message.title,
+                     reply_time = list_to_binary(Msg#message.reply_time_str),
+                     reply_cout = Msg#message.reply_count,
+                     reply_autor = Msg#message.reply_author,
+                     autor = Msg#message.author
+                     }
+        end,
+    FormatList = lists:map(FormatFun, SubList),
+    msg_pb:encode(FormatList).
+
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
 
 update_date(List) ->
     gen_server:cast(push_server, {update_date, List}).
     
-get_data(From, To) ->
+show_data(From, To) ->
     SubList = gen_server:call(push_server, {get_data, From, To}),
     IoFun =
         fun(Msg) ->
