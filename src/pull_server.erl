@@ -124,7 +124,7 @@ update([Pag|Rest], Time) ->
     update(Rest, Time).
 
 update_one(Pag, Now) ->
-    {ok, Html} = httpc:request(Pag, [{timeout, 5*1000}]),
+    {ok, Html} = httpc:request(get, {Pag, []}, [{timeout, 10*1000}], []),
     Tree = mochiweb_html:parse(term_to_binary(Html)),
     TitleList = mochiweb_xpath:execute("//*[@id='body']/div[1]/div[3]/table[2]/*/td[@class = 'title_9']/a/text()", Tree),
     Href = mochiweb_xpath:execute("//*[@id='body']/div[1]/div[3]/table[2]/*/td[@class = 'title_9']/a/@href", Tree),
