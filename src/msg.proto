@@ -1,0 +1,8 @@
+message msg {
+    required string  title = 1;
+    required string  reply_time = 2;
+    required string  url = 3;
+    required string  reply_cout = 4;
+    required string  autor = 5;
+    required string  reply_autor = 6;
+}
