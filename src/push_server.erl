@@ -13,7 +13,7 @@
 -include("common.hrl").
 %% --------------------------------------------------------------------
 %% External exports
--export([start_link/0, update_date/1, get_data/2, show_data/2]).
+-export([start_link/0, update_date/1, show_data/2, get_data/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -39,6 +39,8 @@ get_data(F, T) ->
         end,
     FormatList = lists:map(FormatFun, SubList),
     msg_pb:encode(FormatList).
+    
+           
 
 start_link() ->
     gen_server:start_link(?MODULE, [], []).

@@ -14,5 +14,5 @@
                   reply_author = "",
                   reply_count = 0
                   }).
-                  
+
 -include("msg_pb.hrl").

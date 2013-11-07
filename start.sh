@@ -1,1 +1,1 @@
-erl -pa ebin deps/*/ebin -s bhqt_app
+erl -pa ebin deps/*/ebin -s bhqt_app -name bbs@162.243.128.168 -setcookie bbs -detached -kernel inet_dist_listen_min 9001 inet_dist_listen_max 9001

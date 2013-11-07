@@ -10,6 +10,14 @@
 %% ===================================================================
 
 start(_StartType, _StartArgs) ->
+    Dispatch = cowboy_router:compile([
+        {'_', [
+            {"/", toppage_handler, []}
+        ]}
+    ]),
+    {ok, _} = cowboy:start_http(http, 100, [{port, 8085}], [
+        {env, [{dispatch, Dispatch}]}
+    ]),
     bhqt_sup:start_link().
 
 stop(_State) ->
@@ -17,5 +25,9 @@ stop(_State) ->
 
 start() ->
     inets:start(),
+    application:start(crypto),
+    application:start(ranch),
+    application:start(cowlib),
+    application:start(cowboy),
     application:start(bhqt).
 

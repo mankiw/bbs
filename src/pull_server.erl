@@ -15,7 +15,7 @@
 
 %% --------------------------------------------------------------------
 %% External exports
--export([update_one/2, start_link/0,unixtime/0, get_data/2]).
+-export([update_one/2, start_link/0,unixtime/0, time/1, g_2_unix_second/1]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -26,27 +26,7 @@
 %% External functions
 %% ====================================================================
 
-get_data(From, To) ->
-    SubList = gen_server:call(pull_server, {get_data, From, To}),
-    IoFun =
-        fun(Msg) ->
-                io:format("Title is ~s, time is ~s~n", [Msg#message.title, Msg#message.reply_time_str])
-        end,
-    lists:foreach(IoFun, SubList);
 
-get_data(From, To) ->
-    List = ets:tab2list(ets_info),
-    Fun=
-        fun(#message{reply_time = T1}, #message{reply_time = T2}) ->
-                T1 > T2
-        end,
-    SortedList = lists:sort(Fun, List),
-    SubList = lists:sublist(SortedList, From, To + 1 - From),
-    IoFun =
-        fun(Msg) ->
-                io:format("Title is ~s, time is ~s~n", [Msg#message.title, Msg#message.reply_time_str])
-        end,
-    lists:foreach(IoFun, SubList).
     
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
@@ -144,7 +124,7 @@ update([Pag|Rest], Time) ->
     update(Rest, Time).
 
 update_one(Pag, Now) ->
-    {ok, Html} = httpc:request(Pag),
+    {ok, Html} = httpc:request(Pag, [{timeout, 5*1000}]),
     Tree = mochiweb_html:parse(term_to_binary(Html)),
     TitleList = mochiweb_xpath:execute("//*[@id='body']/div[1]/div[3]/table[2]/*/td[@class = 'title_9']/a/text()", Tree),
     Href = mochiweb_xpath:execute("//*[@id='body']/div[1]/div[3]/table[2]/*/td[@class = 'title_9']/a/@href", Tree),
@@ -169,13 +149,6 @@ update_one(Pag, Now) ->
             Auter2 = lists:nth(N*2, AuterList2),
             Auter = lists:nth(N, AuterList),
             Reply = lists:nth(N, ReplyList),
-%%             io:format("Title is ~s ", [lists:nth(N, TitleList)]),
-%%             io:format("Href is ~s", [lists:nth(N, Href)]),
-%%             io:format("Reply is ~s ", [Reply]),
-%%             io:format("Auter is ~s ", [Auter]),
-%%             io:format("Auter2 is ~s ", [Auter2]),
-%%             io:format("Time is ~s~n", [L]),
-%%             io:format("reTime is ~s~n", [L2]),
             case check(L2, Now) of
                 false ->
                     ok;
@@ -197,7 +170,7 @@ tidy() ->
     List = ets:tab2list(ets_info),
     SortFun = 
         fun(#message{reply_time = T1}, #message{reply_time = T2}) ->
-                T1 > T2
+                T1 < T2
         end,
     SortList = lists:sort(SortFun, List),
     SubList = lists:sublist(SortList, 1000),
@@ -213,7 +186,6 @@ ets_delete([Msg|RestList]) ->
 
 check(L2, Time) ->
     TimeList = string:tokens(L2, ":"),
-    io:format("Time is ~w, L2 is ~s~n", [Time, L2]),
     case length(TimeList) of
         3 ->
             [H, M, S] = TimeList,
@@ -222,13 +194,27 @@ check(L2, Time) ->
             S1 = list_to_integer(S),
             GTime = calendar:datetime_to_gregorian_seconds({date(),{H1,M1,S1}}),
             Utime = g_2_unix_second(GTime),
-            io:format("GTime is ~w~n", [Utime]),
-            case Time - Utime < 60 of
+            case Time - Utime  < 60 of
                 true ->
                     Utime;
                 _ ->
                     false
             end;
+        _ ->
+            false
+    end.
+
+time(L2) ->
+    TimeList = string:tokens(L2, ":"),
+    case length(TimeList) of
+        3 ->
+            [H, M, S] = TimeList,
+            H1 = list_to_integer(H),
+            M1 = list_to_integer(M),
+            S1 = list_to_integer(S),
+            GTime = calendar:datetime_to_gregorian_seconds({date(),{H1,M1,S1}}),
+            Utime = g_2_unix_second(GTime),
+            Utime;
         _ ->
             false
     end.
