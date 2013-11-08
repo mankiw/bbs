@@ -170,7 +170,7 @@ tidy() ->
     List = ets:tab2list(ets_info),
     SortFun = 
         fun(#message{reply_time = T1}, #message{reply_time = T2}) ->
-                T1 < T2
+                T1 > T2
         end,
     SortList = lists:sort(SortFun, List),
     SubList = lists:sublist(SortList, 1000),
