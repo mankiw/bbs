@@ -26,6 +26,7 @@ stop(_State) ->
 start() ->
     inets:start(),
     application:start(crypto),
+    application:start(iconv),
     application:start(ranch),
     application:start(cowlib),
     application:start(cowboy),
