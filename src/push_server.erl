@@ -28,9 +28,11 @@ get_data(F, T) ->
     SubList = gen_server:call(push_server, {get_data, F, T}),
     FormatFun =
         fun(Msg) ->
+                Title1 = binary_to_list(Msg#message.title),
+                Title = iconv:convert("gbk", "utf-8", Title1),
                 #msg{
                      url = Msg#message.url,
-                     title = Msg#message.title,
+                     title = list_to_binary(Title),
                      reply_time = list_to_binary(Msg#message.reply_time_str),
                      reply_cout = Msg#message.reply_count,
                      reply_autor = Msg#message.reply_author,
