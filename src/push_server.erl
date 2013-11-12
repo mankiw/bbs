@@ -13,7 +13,7 @@
 -include("common.hrl").
 %% --------------------------------------------------------------------
 %% External exports
--export([start_link/0, update_date/1, show_data/2, get_data/2]).
+-export([start_link/0, update_date/1, show_data/2, get_data/2, get_json/2]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2, terminate/2, code_change/3]).
@@ -42,7 +42,25 @@ get_data(F, T) ->
     FormatList = lists:map(FormatFun, SubList),
     msg_pb:encode(FormatList).
     
-           
+get_json(F, T) ->
+    SubList = gen_server:call(push_server, {get_data, F, T}),
+    FormatFun =
+        fun(Msg) ->
+                Title1 = binary_to_list(Msg#message.title),
+                io:format("~w",[Title1]),
+                Title = iconv:convert("gbk", "utf-8", Title1),
+                M = #msg{
+                     url = Msg#message.url,
+                     title = list_to_binary(Title),
+                     reply_time = list_to_binary(Msg#message.reply_time_str),
+                     reply_cout = Msg#message.reply_count,
+                     reply_autor = Msg#message.reply_author,
+                     autor = Msg#message.author
+                     },
+               [{<<"titile">>, M#msg.title},{<<"reply_time">>, M#msg.reply_time}]
+        end,
+    FormatList = lists:map(FormatFun, SubList),
+    jsx:encode(FormatList).         
 
 start_link() ->
     gen_server:start_link(?MODULE, [], []).
