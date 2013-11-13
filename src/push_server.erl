@@ -47,7 +47,6 @@ get_json(F, T) ->
     FormatFun =
         fun(Msg) ->
                 Title1 = binary_to_list(Msg#message.title),
-                io:format("~w",[Title1]),
                 Title = iconv:convert("gbk", "utf-8", Title1),
                 M = #msg{
                      url = Msg#message.url,
